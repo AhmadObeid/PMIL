@@ -15,15 +15,6 @@ import os, sys, time
 import cv2
 from selection import main as main_select
 from selection import all_profiles, load_rgb_values, profiling, select_by_color
-#from ctypes import CDLL
-
-#os.environ['R_HOME'] = '/home/kunet.ae/100049698/.conda/envs/histoTDA/lib/R'
-#os.environ['R_LIBS_USER'] = '/home/kunet.ae/100049698/.conda/envs/histoTDA/lib/R/library'
-#os.environ['LD_LIBRARY_PATH'] = '/home/kunet.ae/100049698/.conda/envs/histoTDA/lib:/global/opt/apps/slurm/21.08.8.2/lib:/lib64:' + os.environ.get('LD_LIBRARY_PATH', '')
-#
-#print("R_HOME:", os.environ['R_HOME'])
-#print("R_LIBS_USER:", os.environ['R_LIBS_USER'])
-#print("LD_LIBRARY_PATH:", os.environ['LD_LIBRARY_PATH'])
 
 
 import matplotlib.pyplot as plt
