@@ -48,14 +48,34 @@ python -m generate_persistence...etc
 If nuclei are extracted before strating TDA (i.e. through a pretrained model), they must be passed as argument.
 otherwise...etc
 
+## Codes Modification
+### extract_features.py
+We start by modifying the CLAM/extract_features.py file, which will be used to get the PI and PC features. The changes include:
+
+1. Include two new model names in the --model_name argument. Namely, 'resnet50_trunc_3d', 'resnet50_trunc_PI', which extract PC and PI features.
+2. Include a modality argument to separate PIs pipelines from PCs ones.
+3. 
+
+```
+CUDA_VISIBLE_DEVICES=1 python extract_features.py \
+--data_dir <dir_to_PIs> \
+--csv_path <dir_to_csv> \
+--feat_dir <output_dir> \
+--batch_size 512 \
+--slide_ext .tiff \
+--model_name "resnet50_trunc_PI" \
+--modality "PIs" \
+```
+
+
 ## TDA-features
+The TDA features are extracted in the same way the vanilla RGB features are extracted following [CLAM](www.github.com/CLAM). After going through the necessary code modification to facilitate handling PI images, both PI and PC features can be extracted and used in training.
 
-
-### Checkpoints
+## Checkpoints
 For reproducability, all trained models used can be accessed [here](https://drive.google.com/drive/folders/1NZ82z0U_cexP6zkx1mRk-QeJyKWk4Q7z?usp=sharing).
 
 
-## Codes Modification
+
 
 
 ### Examples
