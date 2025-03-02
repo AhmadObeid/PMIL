@@ -1,9 +1,9 @@
 PMIL <img src="pmil-logo.png" width="280px" align="right" />
 ===========
 
-***Overview:** PMIL is a versatile module for modeling object-level information in histopathology images through Topological Data Analysis. cPMIL is a cubic version that utilizes the multi-magnification factor in WSIs. The two modules can be plugged in most existing MIL pipelines with easy code manipulation, and offer an enhanced performance. In this repo, we demonstrate how to apply the modules to the [CLAM]() pipeline, for the classification task over the [PANDA]() challenge dataset*
+***Overview:** PMIL is a versatile module for modeling object-level information in histopathology images through Topological Data Analysis. cPMIL is a cubic version that utilizes the multi-magnification factor in WSIs. The two modules can be plugged in most existing MIL pipelines with easy code manipulation, and offer an enhanced performance. In this repo, we demonstrate how to apply the modules to the [CLAM](www.github.com/CLAM) pipeline, for the classification task over the [PANDA](https://panda.grand-challenge.org/data/) challenge dataset*
 
-<img src="PMIL.gif" width="470px" align="center" />
+<img src="PMIL.gif" width="600px" style="display: block; margin: auto;" />
 
 
 [Installation](#installation) • [Patchifying and Feature Extraction](#patchifying-and-feature-extraction) • [Nuclei Extraction](#nuclei-extraction) • [Topological Data Extraction](#topological-data-extraction) • [Codes Modification](#codes-modification) • [TDA Features Extraction](#tda-features-extraction) • [Checkpoints](#checkpoints) • [Cite](#reference)
