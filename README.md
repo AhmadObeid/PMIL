@@ -14,10 +14,10 @@ PMIL
 
 ## Installation:
 Clone this repo, and clone [CLAM](www.github.com/CLAM) repo. The general recommendation is to create two environments, one for the topology analysis, and one for the CLAM pipeline.
-Follow installation instructions of [CLAM](www.github.com/CLAM) and [Topology Repo](github.com/KitwareMedical/HistologyCancerDiagnosisDeepPersistenceHomology).
+Follow installation instructions of [CLAM](www.github.com/mahmoodlab/CLAM) and [Topology Repo](github.com/KitwareMedical/HistologyCancerDiagnosisDeepPersistenceHomology).
 
 ## Patchifying and Feature Extraction
-Refer to the [CLAM](www.github.com/CLAM) for details about patchifying, and RGB feature extraction. We provide the csv files that we used to extract the patches in PANDA.csv.
+Refer to the [CLAM](www.github.com/mahmoodlab/CLAM) for details about patchifying, and RGB feature extraction. We provide the csv files that we used to extract the patches in PANDA.csv.
 
 ## Nuclei Extraction
 It is important to extract nuclei, as they represent the main key features in the histopathology image. The point cloud, represented by the extracted nuclei, will be the catalyst to start our TDA. Nuclei extraction can either be done using simple thresholding, or using a pretrained model like the [hovernet](www.github.com/hovernet) model. In this example, we used the former.
@@ -70,7 +70,7 @@ The train() and function is modified to accomodate calling the right model, load
 The main model CLAM_SB is modified to facilitate feature-level fusion of RGB features and PI (H0 or H1) or PC (H0 or H1) features.
 
 ## TDA Features Extraction
-The TDA features are extracted in the same way the vanilla RGB features are extracted following [CLAM](www.github.com/CLAM). 
+The TDA features are extracted in the same way the vanilla RGB features are extracted following [CLAM](www.github.com/mahmoodlab/CLAM). 
 
 After going through the necessary code modification to facilitate handling PI images, both PI and PC features can be extracted and used in training.
 
