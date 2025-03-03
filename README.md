@@ -87,7 +87,7 @@ CUDA_VISIBLE_DEVICES=1 python extract_features.py \
 ```
 
 ## Checkpoints
-For reproducability, all trained models used can be accessed [here](https://drive.google.com/drive/folders/1NZ82z0U_cexP6zkx1mRk-QeJyKWk4Q7z?usp=sharing).
+For reproducability, all trained models used can be accessed [here]().
 
 
 ## Issues
