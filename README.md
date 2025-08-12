@@ -24,11 +24,11 @@ It is important to extract nuclei, as they represent the main key features in th
 If a pretrained model is used, save the nuceli detection results in a json file (example included: nuc_example.json). This must be done for each patch in the WSI at a time.
 
 We supply a profiling pipeline that facilitates an improved nuclei extraction based on thresholding and color convolution in displays/. By manual inspection, we extracted the minimum and maximum RGB values for each class in the PANDA dataset. For each given WSI, nuclei can be extracted based on these RGB values. This is done automatically in the code, so no need to worry about it. 
-To opt out of this and follow the origianl method, you can follow [this](github.com/KitwareMedical/HistologyCancerDiagnosisDeepPersistenceHomology).
+To opt out of this and follow the origianl method, you can follow [this](https://github.com/KitwareMedical/HistologyCancerDiagnosisDeepPersistenceHomology).
 
 
 ## Topological Data Extraction
-For the topology analysis we follow the nice work of [Kitware](github.com/KitwareMedical/HistologyCancerDiagnosisDeepPersistenceHomology).
+For the topology analysis we follow the nice work of [Kitware](https://github.com/KitwareMedical/HistologyCancerDiagnosisDeepPersistenceHomology).
 To extract the Persistance Images:
 ```
 python gen_pers.py --data <dir to data> \
