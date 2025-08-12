@@ -170,12 +170,7 @@ def train(datasets, cur, args, H0=False, H1=False):
         macs, params = get_model_complexity_info(model, (2048,), as_strings=True, print_per_layer_stat=False)
         print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
         print('{:<30}  {:<8}'.format('Number of parameters: ', params))
-    pdb.set_trace()
-    #for name, param in model.named_parameters():
-        #print(name,param.requires_grad)
-    _ = model.to(device)
-    print('Done!')
-    print_network(model)
+   
     
     
     print('\nInit optimizer ...', end=' ')
