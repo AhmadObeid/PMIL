@@ -1,4 +1,4 @@
-PMIL 
+<img width="218" height="30" alt="image" src="https://github.com/user-attachments/assets/ee592230-bd20-439e-be99-f8c56412a317" />PMIL 
 ===========
 
 ***Overview:** PMIL is a versatile module for modeling object-level information in histopathology images through Topological Data Analysis. cPMIL is a cubic version that utilizes the multi-magnification factor in WSIs. The two modules can be plugged in most existing MIL pipelines with easy code manipulation, and offer an enhanced performance. In this repo, we demonstrate how to apply the modules to the [CLAM](https://github.com/mahmoodlab/CLAM) pipeline, for the classification task over the [PANDA](https://panda.grand-challenge.org/data/) challenge dataset*
@@ -88,6 +88,40 @@ CUDA_VISIBLE_DEVICES=1 python extract_features.py \
 
 ## Checkpoints
 For reproducability, all trained models used can be accessed [here](https://drive.google.com/drive/folders/1yW1mPhAYypg2-ZwWmRU1LetyW2wfFE8M?usp=sharing).
+Make a directory called shared_weights and place the contents in the above link inside.
+
+## Testing
+The results in the paper can be reproduced using the above weights, and running main.py with the argument --test_decision, and setting --modality to PIs or PCs.
+
+For PMIL:
+```
+CUDA_VISIBLE_DEVICES=1 python PMIL_main.py \
+ --task task_2_tumor_subtyping \
+ --model_type clam_sb \
+ --data_root_dir ~/../../mnt/nvme0n1/Dataset/classification/histopathology_classification/PANDA/CLAM_256x256/train/Featurized_data_4 \
+ --magn 4.0 \
+ --subtyping \
+ --test_decision 1 \
+ --modality PIs \
+```
+
+For cPMIL, the magnification should always be the highest level:
+```
+CUDA_VISIBLE_DEVICES=1 python PMIL_main.py \
+ --task task_2_tumor_subtyping \
+ --model_type clam_sb \
+ --data_root_dir ~/../../mnt/nvme0n1/Dataset/classification/histopathology_classification/PANDA/CLAM_256x256/train/Featurized_data_16 \
+ --magn 16.0 \
+ --subtyping \
+ --test_decision 1 \
+ --modality PCs \
+```
+
+
+| PMIL | cPMIL |
+|:------:|:------:|
+| ACC=0.731 | ACC=0.663 |
+| AUC=0.936| AUC=0.909 |
 
 
 ## Issues
