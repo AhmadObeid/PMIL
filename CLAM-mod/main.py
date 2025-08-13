@@ -23,7 +23,162 @@ import torchmetrics
 from timm.utils import accuracy
 import re
 
+def seed_torch(seed=7):
+    import random
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if device.type == 'cuda':
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
+
+
+def test_decision(args): 
+    device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    from models.model_clam import CLAM_SB
+    from topk.svm import SmoothTop1SVM
+    instance_loss_fn = SmoothTop1SVM(n_classes = 2)
+    if device.type == 'cuda':
+        instance_loss_fn = instance_loss_fn.cuda()
+    args.n_classes=6 
+    testing_modality = args.modality
+    model_dict = {'dropout': 0.25, 'n_classes': 6,
+                 'embed_dim': 1024, 'size_arg': 'small',
+                 'subtyping': True, 'k_sample': 8}
+    
+
+    model_type = 'c' * ("PCs" in testing_modality) + 'PMIL' 
+    all_preds = []
+    for typ in [0,1]:
+        H0=(typ==0)
+        H1=(typ==1)
+        dataset = Generic_MIL_Dataset(csv_path = 'panda.csv',
+                        data_dir= args.data_root_dir,
+                        shuffle = False, 
+                        seed = args.seed, 
+                        print_info = True,
+                        label_dict = {'grade_0':0, 'grade_1':1, 'grade_2':2, 'grade_3':3, 'grade_4':4, 'grade_5':5}, 
+                        patient_strat= False,
+                        ignore=[],
+                        H0 = H0,
+                        H1 = H1,
+                        magn = args.magn,
+                        modality = testing_modality)
+
+        _, _, test_dataset = dataset.return_splits(from_id=False, 
+                csv_path=f'test_sets/{model_type}_split.csv')
+        test_loader = get_split_loader(test_dataset)
+
+        model = CLAM_SB(**model_dict,
+                        instance_loss_fn=instance_loss_fn,
+                        H0=H0,H1=H1) 
+        model.load_state_dict(torch.load(f"shared_weights/{model_type}_{typ}.pt"))
+        model=model.to(device)
+        results, _, _, _, _ = summary(model, test_loader, args.n_classes)
+        preds = [v['prob'] for v in results.values()]
+        preds = torch.Tensor(np.array(preds)).squeeze()
+        all_preds.append(preds)
+    all_preds = torch.stack(all_preds,axis=0)
+    fused_decision = torch.Tensor(torch.mean(all_preds,dim=0))
+    _, test_error, test_auc, _, _ = summary(0, test_loader, args.n_classes, ready_preds=fused_decision)
+    print(f'* Acc {1-test_error} auroc {test_auc}')    
+
+     
+    
+
+        
+
 def main(args):
+    encoding_size = 1024
+    settings = {'num_splits': args.k, 
+                'k_start': args.k_start,
+                'k_end': args.k_end,
+                'task': args.task,
+                'max_epochs': args.max_epochs, 
+                'results_dir': args.results_dir, 
+                'lr': args.lr,
+                'experiment': args.exp_code,
+                'reg': args.reg,
+                'label_frac': args.label_frac,
+                'bag_loss': args.bag_loss,
+                'seed': args.seed,
+                'model_type': args.model_type,
+                'model_size': args.model_size,
+                "use_drop_out": args.drop_out,
+                'weighted_sample': args.weighted_sample,
+                'opt': args.opt}
+
+    if args.model_type in ['clam_sb', 'clam_mb']:
+        settings.update({'bag_weight': args.bag_weight,
+                            'inst_loss': args.inst_loss,
+                            'B': args.B})
+
+    print('\nLoad Dataset')
+
+    if args.task == 'task_1_tumor_vs_normal':
+        args.n_classes=2
+        dataset = Generic_MIL_Dataset(csv_path = 'cam16.csv', #'sln.csv',
+                                data_dir= args.data_root_dir,
+                                shuffle = False, 
+                                seed = args.seed, 
+                                print_info = True,
+                                label_dict = {'normal_tissue':0, 'tumor_tissue':1},
+                                patient_strat=False,
+                                ignore=[],
+                                H0 = args.H0,
+                                H1 = args.H1,
+                                magn = args.magn,
+                                modality = args.modality)
+    elif args.task == 'task_2_tumor_subtyping':
+        args.n_classes=6 #Ahmad
+        dataset = Generic_MIL_Dataset(csv_path = 'panda.csv',
+                                data_dir= args.data_root_dir,
+                                shuffle = False, 
+                                seed = args.seed, 
+                                print_info = True,
+                                label_dict = {'grade_0':0, 'grade_1':1, 'grade_2':2, 'grade_3':3, 'grade_4':4, 'grade_5':5}, #Ahmad
+                                patient_strat= False,
+                                ignore=[],
+                                H0 = args.H0,
+                                H1 = args.H1,
+                                magn = args.magn,
+                                modality = args.modality)
+        if args.model_type in ['clam_sb', 'clam_mb']:
+            assert args.subtyping 
+            
+    else:
+        raise NotImplementedError
+        
+    if not os.path.isdir(args.results_dir):
+        os.mkdir(args.results_dir)
+
+    args.results_dir = os.path.join(args.results_dir, str(args.exp_code) + '_s{}'.format(args.seed))
+    if not os.path.isdir(args.results_dir):
+        os.mkdir(args.results_dir)
+
+    if args.split_dir is None:
+        args.split_dir = os.path.join('splits', args.task+'_{}'.format(int(args.label_frac*100)))
+    else:
+        args.split_dir = os.path.join('splits', args.split_dir)
+
+    print('split_dir: ', args.split_dir)
+    assert os.path.isdir(args.split_dir)
+
+    settings.update({'split_dir': args.split_dir})
+
+
+    # with open(args.results_dir + '/experiment_{}.txt'.format(args.exp_code), 'w') as f:
+        # print(settings, file=f)
+    # f.close()
+
+    print("################# Settings ###################")
+    for key, val in settings.items():
+        print("{}:  {}".format(key, val))   
+
     # create results directory if necessary
     if not os.path.isdir(args.results_dir):
         os.mkdir(args.results_dir)
@@ -116,115 +271,20 @@ parser.add_argument('--B', type=int, default=8, help='numbr of positive/negative
 parser.add_argument('--H0', type=lambda x: bool(strtobool(x)), default=0)
 parser.add_argument('--H1', type=lambda x: bool(strtobool(x)), default=0)
 parser.add_argument('--magn', type=str, default="40.0", choices=("16.0","4.0","1.0","40.0","20.0","10.0","5.0","2.5","1.25","0.624"))
-parser.add_argument('--modality', type=str, default=None, choices=("PIs","PCs"))
+parser.add_argument('--modality', type=str,help="valid options are PIs and PCs, anything else goes to None (=RGB only)")
+parser.add_argument('--test_decision', type=lambda x: bool(strtobool(x)), default=0)
 
 args = parser.parse_args()
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-def seed_torch(seed=7):
-    import random
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if device.type == 'cuda':
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+if args.modality not in ["PIs","PCs"]:
+    args.modality = None 
 
 seed_torch(args.seed)
 
-encoding_size = 1024
-settings = {'num_splits': args.k, 
-            'k_start': args.k_start,
-            'k_end': args.k_end,
-            'task': args.task,
-            'max_epochs': args.max_epochs, 
-            'results_dir': args.results_dir, 
-            'lr': args.lr,
-            'experiment': args.exp_code,
-            'reg': args.reg,
-            'label_frac': args.label_frac,
-            'bag_loss': args.bag_loss,
-            'seed': args.seed,
-            'model_type': args.model_type,
-            'model_size': args.model_size,
-            "use_drop_out": args.drop_out,
-            'weighted_sample': args.weighted_sample,
-            'opt': args.opt}
-
-if args.model_type in ['clam_sb', 'clam_mb']:
-   settings.update({'bag_weight': args.bag_weight,
-                    'inst_loss': args.inst_loss,
-                    'B': args.B})
-
-print('\nLoad Dataset')
-
-if args.task == 'task_1_tumor_vs_normal':
-    args.n_classes=2
-    dataset = Generic_MIL_Dataset(csv_path = 'cam16.csv', #'sln.csv',
-                            data_dir= args.data_root_dir,
-                            shuffle = False, 
-                            seed = args.seed, 
-                            print_info = True,
-                            label_dict = {'normal_tissue':0, 'tumor_tissue':1},
-                            patient_strat=False,
-                            ignore=[],
-                            H0 = args.H0,
-                            H1 = args.H1,
-                            magn = args.magn,
-                            modality = args.modality)
-elif args.task == 'task_2_tumor_subtyping':
-    args.n_classes=6 #Ahmad
-    dataset = Generic_MIL_Dataset(csv_path = 'panda.csv',
-                            data_dir= args.data_root_dir,
-                            shuffle = False, 
-                            seed = args.seed, 
-                            print_info = True,
-                            label_dict = {'grade_0':0, 'grade_1':1, 'grade_2':2, 'grade_3':3, 'grade_4':4, 'grade_5':5}, #Ahmad
-                            patient_strat= False,
-                            ignore=[],
-                            H0 = args.H0,
-                            H1 = args.H1,
-                            magn = args.magn,
-                            modality = args.modality)
-    if args.model_type in ['clam_sb', 'clam_mb']:
-        assert args.subtyping 
-        
-else:
-    raise NotImplementedError
-    
-if not os.path.isdir(args.results_dir):
-    os.mkdir(args.results_dir)
-
-    
-args.results_dir = os.path.join(args.results_dir, str(args.exp_code) + '_s{}'.format(args.seed))
-if not os.path.isdir(args.results_dir):
-    os.mkdir(args.results_dir)
-
-if args.split_dir is None:
-    args.split_dir = os.path.join('splits', args.task+'_{}'.format(int(args.label_frac*100)))
-else:
-    args.split_dir = os.path.join('splits', args.split_dir)
-
-print('split_dir: ', args.split_dir)
-assert os.path.isdir(args.split_dir)
-
-settings.update({'split_dir': args.split_dir})
-
-
-# with open(args.results_dir + '/experiment_{}.txt'.format(args.exp_code), 'w') as f:
-    # print(settings, file=f)
-# f.close()
-
-print("################# Settings ###################")
-for key, val in settings.items():
-    print("{}:  {}".format(key, val))        
 
 if __name__ == "__main__":
-    if args.test_decision_fusion is not None:
+    if args.test_decision:
         test_decision(args)
     else:
         results = main(args)
