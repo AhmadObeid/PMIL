@@ -95,7 +95,7 @@ The results in the paper can be reproduced using the above weights, and running 
 
 For PMIL:
 ```
-CUDA_VISIBLE_DEVICES=1 python PMIL_main.py \
+CUDA_VISIBLE_DEVICES=1 python main.py \
  --task task_2_tumor_subtyping \
  --model_type clam_sb \
  --data_root_dir ~/../../mnt/nvme0n1/Dataset/classification/histopathology_classification/PANDA/CLAM_256x256/train/Featurized_data_4 \
@@ -107,7 +107,7 @@ CUDA_VISIBLE_DEVICES=1 python PMIL_main.py \
 
 For cPMIL, the magnification should always be the highest level:
 ```
-CUDA_VISIBLE_DEVICES=1 python PMIL_main.py \
+CUDA_VISIBLE_DEVICES=1 python main.py \
  --task task_2_tumor_subtyping \
  --model_type clam_sb \
  --data_root_dir ~/../../mnt/nvme0n1/Dataset/classification/histopathology_classification/PANDA/CLAM_256x256/train/Featurized_data_16 \
