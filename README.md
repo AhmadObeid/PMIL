@@ -131,4 +131,24 @@ CUDA_VISIBLE_DEVICES=1 python main.py \
 
 
 ## Reference
-Coming Soon!
+- If you find this repo useful for your work, please consider citing our associated papers
+```
+@article{obeid2025enhancing,
+  title={Enhancing Prostate Cancer Subtyping: A Persistent Homology Approach in Multiple Instance Learning},
+  author={Obeid, Ahmad and Javed, Sajid and Dias, Jorge and Elfadel, Ibrahim Abe M and Werghi, Naoufel},
+  journal={Engineered Science},
+  volume={38},
+  pages={1905},
+  year={2025},
+  publisher={Engineered Science Publisher}
+}
+
+@inproceedings{obeid2025pmil,
+  title={PMIL: A Topology Module to Improve MIL-based WSI Classification},
+  author={Obeid, Ahmad and Sohail, Anabia and Boumaraf, Said and Liu, Xiabi and Javed, Sajid and Almarzouqi, Hasan and Dias, Jorge and Bennamoun, Mohammed and Werghi, Naoufel and Elfadel, Ibrahim Abe},
+  booktitle={2025 IEEE International Symposium on Circuits and Systems (ISCAS)},
+  pages={1--5},
+  year={2025},
+  organization={IEEE}
+}
+```
